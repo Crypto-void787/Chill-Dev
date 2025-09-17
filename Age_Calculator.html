@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Age Calculator made</title>
+
+  <style>
+    :root
+     {
+       --bg:#0f1724; --card:#0b1220; --accent:#7c3aed; --glow: rgba(124,58,237,0.22);
+       --muted:#94a3b8; --glass: rgba(255,255,255,0.04);
+     }
+
+     *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,'Helvetica Neue',Arial}
+
+     html,body
+      { height:100%;
+        margin:0;
+        background:linear-gradient(180deg,var(--bg),#061024);
+        color:#e6eef8 }
+
+     .wrap
+      { min-height:100vh;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:28px }
+
+     .card
+      { width:100%;
+        max-width:920px;
+        background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);
+        border-radius:20px;
+        padding:28px;
+        box-shadow:0 8px 40px rgba(2,6,23,0.6);
+        border:1px solid rgba(255,255,255,0.03);
+        display:grid;
+        grid-template-columns: 380px 1fr;
+        gap:20px }
+
+     .brand{display:flex;gap:12px;align-items:center}
+     .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:700}
+     h1{margin:0;font-size:20px}
+     p.lead{margin:6px 0 16px;color:var(--muted);font-size:13px}
+
+     label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+     .field{background:var(--card);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.02)}
+     input[type="date"], input[type="time"], select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit}
+     .inline{display:flex;gap:10px}
+     .btn{background:linear-gradient(90deg,var(--accent),#06b6d4);padding:10px 12px;border-radius:10px;border:none;color:#061024;font-weight:700;cursor:pointer}
+     .mutebtn{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:8px 10px;border-radius:10px;cursor:pointer}
+
+     .result{padding:18px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);display:flex;flex-direction:column;gap:10px}
+     .big{font-size:34px;font-weight:800}
+     .sub{color:var(--muted);font-size:13px}
+     .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+     .stat{background:var(--glass);padding:12px;border-radius:10px;text-align:center}
+     .stat .num{font-weight:800;font-size:20px}
+     .small{font-size:12px;color:var(--muted)}
+
+     .footer{display:flex;gap:8px;align-items:center;justify-content:flex-end}
+     .toast{position:fixed;right:20px;bottom:20px;background:rgba(0,0,0,0.7);padding:12px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);color:#e6eef8}
+
+     @media (max-width:900px){
+       .card{grid-template-columns:1fr;}
+       .brand{justify-content:space-between}
+     }
+
+     /* tiny sparkle */
+     .spark{position:absolute;right:20px;top:8px;width:8px;height:8px;background:var(--glow);border-radius:50%;filter:blur(8px)}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card" role="application">
+      <div>
+        <div class="brand">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="logo">AGE</div>
+            <div>
+              <h1>Age Calculator</h1>
+              <p class="lead">Get precise age breakdown, next birthday countdown, and a shareable link. Big flex for birthdays 🎉</p>
+            </div>
+          </div>
+          <div class="spark" aria-hidden></div>
+        </div>
+
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:12px">
+          <div>
+            <label for="bdate">Pick your birth date</label>
+            <div class="field"><input id="bdate" type="date" /></div>
+          </div>
+
+          <div>
+            <label for="btime">Birth time (optional)</label>
+            <div class="field inline">
+              <input id="btime" type="time" step="1" style="flex:1" />
+              <select id="tz" title="Timezone offset">
+                <option value="local">Local timezone</option>
+                <option value="utc">UTC</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+            <button id="calc" class="btn">Calculate</button>
+            <button id="now" class="mutebtn">Set to NOW</button>
+            <button id="clear" class="mutebtn">Clear</button>
+          </div>
+
+          <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+            <input id="name" placeholder="Name (optional) " style="flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit" />
+            <button id="share" class="mutebtn">Share Link</button>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;color:var(--muted);font-size:13px">
+          Tip: share the generated URL — it auto-fills the date/time so it's clickable for friends.
+        </div>
+      </div>
+
+      <div>
+        <div class="result">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div id="who" class="sub">—</div>
+              <div id="summary" class="big">Your age will appear here</div>
+              <div id="since" class="sub">Waiting for you to hit Calculate</div>
+            </div>
+            <div style="text-align:right">
+              <div class="sub">Next birthday in</div>
+              <div id="nextbd" class="big">--d --h --m --s</div>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="stat">
+              <div class="num" id="yrs">--</div>
+              <div class="small">Years</div>
+            </div>
+            <div class="stat">
+              <div class="num" id="mos">--</div>
+              <div class="small">Months</div>
+            </div>
+            <div class="stat">
+              <div class="num" id="dys">--</div>
+              <div class="small">Days</div>
+            </div>
+            <div class="stat">
+              <div class="num" id="secs">--</div>
+              <div class="small">Total seconds</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;align-items:center;justify-content:space-between">
+            <div class="small">Live-updating: age updates every second for precision ✨</div>
+            <div class="footer">
+              <button id="copy" class="mutebtn">Copy Age</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;padding:12px;background:rgba(255,255,255,0.02);border-radius:12px;color:var(--muted);font-size:13px">
+          <strong>How sharing works:</strong> clicking <em>Share Link</em> copies a URL with the date/time encoded — paste it anywhere and it's clickable. To make the page accessible to others, Grab this from my github — then the copied URL will work as a normal web link.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" style="display:none" class="toast">Copied to clipboard</div>
+
+  <script>
+    // Utilities
+    function pad(n){ return n.toString().padStart(2,'0') }
+    function qs(key){ const u=new URLSearchParams(location.search); return u.get(key) }
+
+    function parseInputs(){
+      const d=document.getElementById('bdate').value; if(!d) return null;
+      const t=document.getElementById('btime').value || '00:00:00';
+      const tz=document.getElementById('tz').value;
+      const name=document.getElementById('name').value || '';
+      let iso = d + 'T' + t;
+      if(tz === 'utc') iso += 'Z';
+      // If local, the Date constructor will use local timezone
+      const dt = new Date(iso);
+      if(isNaN(dt)) return null;
+      return {dt,name,tz};
+    }
+
+    function formatAge(from, to){
+      if(to<from) return null;
+      // compute years, months, days, hours, mins, secs
+      const yFrom = from.getFullYear(), mFrom = from.getMonth(), dFrom = from.getDate();
+      const yTo = to.getFullYear(), mTo = to.getMonth(), dTo = to.getDate();
+
+      let years = yTo - yFrom;
+      let months = mTo - mFrom;
+      let days = dTo - dFrom;
+      // adjust
+      if(days<0){
+        const prev = new Date(to.getFullYear(), to.getMonth(), 0).getDate();
+        days += prev; months -= 1;
+      }
+      if(months<0){ months += 12; years -= 1 }
+
+      // remainder hours/mins/secs
+      const rFrom = new Date(
+        from.getFullYear()+years,
+        from.getMonth()+months,
+        from.getDate(),
+        from.getHours(),
+        from.getMinutes(),
+        from.getSeconds()
+      );
+      let diff = Math.floor((to - rFrom)/1000);
+      const hours = Math.floor(diff/3600); diff%=3600;
+      const mins = Math.floor(diff/60); const secs = diff%60;
+
+      const totalSeconds = Math.floor((to - from)/1000);
+      const totalDays = Math.floor(totalSeconds/86400);
+
+      return {years,months,days,hours,mins,secs,totalSeconds,totalDays};
+    }
+
+    let liveTimer = null;
+    function startLive(from){
+      if(liveTimer) clearInterval(liveTimer);
+      function tick(){
+        const now = new Date();
+        const res = formatAge(from,now);
+        if(!res) return;
+        document.getElementById('yrs').innerText = res.years;
+        document.getElementById('mos').innerText = res.months;
+        document.getElementById('dys').innerText = res.days + ' ('+res.totalDays+' days)';
+        document.getElementById('secs').innerText = res.totalSeconds.toLocaleString();
+        document.getElementById('summary').innerText = `${res.years}y ${res.months}m ${res.days}d ${res.hours}h ${res.mins}m ${res.secs}s`;
+        document.getElementById('since').innerText = 'As of: ' + now.toLocaleString();
+
+        // next birthday
+        const nextYear = now.getFullYear() + (now.getMonth()>from.getMonth() || (now.getMonth()===from.getMonth() && now.getDate()>from.getDate()) ? 1:0);
+        const nextBD = new Date(nextYear, from.getMonth(), from.getDate(), from.getHours(), from.getMinutes(), from.getSeconds());
+        let diff = Math.max(0, Math.floor((nextBD - now)/1000));
+        const d = Math.floor(diff/86400); diff%=86400; const h=Math.floor(diff/3600); diff%=3600; const m=Math.floor(diff/60); const s=diff%60;
+        document.getElementById('nextbd').innerText = `${d}d ${h}h ${m}m ${s}s`;
+        document.getElementById('who').innerText = (document.getElementById('name').value || 'You') + "'s age";
+      }
+      tick();
+      liveTimer = setInterval(tick,1000);
+    }
+
+    function showToast(txt){ const t=document.getElementById('toast'); t.innerText=txt; t.style.display='block'; setTimeout(()=>t.style.display='none',1800) }
+
+    // events
+    document.getElementById('calc').addEventListener('click', ()=>{
+      const payload = parseInputs(); if(!payload){ showToast('Pick a valid date fam'); return }
+      startLive(payload.dt);
+
+      // update query params (so share link works)
+      const params = new URLSearchParams(); params.set('b', document.getElementById('bdate').value);
+      if(document.getElementById('btime').value) params.set('t', document.getElementById('btime').value);
+      if(document.getElementById('name').value) params.set('n', document.getElementById('name').value);
+      if(document.getElementById('tz').value!=='local') params.set('z', document.getElementById('tz').value);
+      const newurl = location.origin + location.pathname + '?' + params.toString();
+      history.replaceState(null,'',newurl);
+    });
+
+    document.getElementById('now').addEventListener('click', ()=>{
+      const now=new Date();
+      document.getElementById('bdate').value = now.toISOString().slice(0,10);
+      document.getElementById('btime').value = now.toTimeString().slice(0,8);
+    });
+
+    document.getElementById('clear').addEventListener('click', ()=>{
+      document.getElementById('bdate').value='';
+      document.getElementById('btime').value='';
+      document.getElementById('name').value='';
+      history.replaceState(null,'',location.pathname);
+      if(liveTimer) clearInterval(liveTimer);
+      document.getElementById('summary').innerText='Your age will appear here';
+      document.getElementById('since').innerText='Waiting for you to hit Calculate';
+      document.getElementById('who').innerText='—';
+      document.getElementById('yrs').innerText='--';
+      document.getElementById('mos').innerText='--';
+      document.getElementById('dys').innerText='--';
+      document.getElementById('secs').innerText='--';
+      document.getElementById('nextbd').innerText='--d --h --m --s';
+    });
+
+    // share
+    document.getElementById('share').addEventListener('click', async ()=>{
+      const b=document.getElementById('bdate').value; if(!b){ showToast('Pick a date bruh'); return }
+      const params = new URLSearchParams(); params.set('b', b);
+      if(document.getElementById('btime').value) params.set('t', document.getElementById('btime').value);
+      if(document.getElementById('name').value) params.set('n', document.getElementById('name').value);
+      if(document.getElementById('tz').value!=='local') params.set('z', document.getElementById('tz').value);
+      const shareUrl = location.origin + location.pathname + '?' + params.toString();
+      try{
+        await navigator.clipboard.writeText(shareUrl);
+        showToast('Link copied — paste it anywhere!');
+      }catch(e){
+        
+
+        prompt('Copy this link', shareUrl);
+      }
+    });
+
+    
+    document.getElementById('copy').addEventListener('click', ()=>{
+      const txt = document.getElementById('summary').innerText + ' — ' + document.getElementById('who').innerText;
+      navigator.clipboard.writeText(txt).then(()=>showToast('Age copied to clipboard'));
+    });
+
+    // on load: read query params
+    window.addEventListener('load', ()=>{
+      const b = qs('b'); const t=qs('t'); const n=qs('n'); const z=qs('z');
+      if(b) document.getElementById('bdate').value = b;
+      if(t) document.getElementById('btime').value = t;
+      if(n) document.getElementById('name').value = n;
+      if(z) document.getElementById('tz').value = z;
+      if(b){ document.getElementById('calc').click(); }
+    });
+  </script>
+</body>
+
+</html>
